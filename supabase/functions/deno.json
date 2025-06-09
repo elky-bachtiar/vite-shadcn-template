@@ -26,8 +26,9 @@
       "proseWrap": "preserve"
     }
   },
-  "imports": {
-    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.49.1",
-    "stripe": "npm:stripe@17.7.0"
+  "importMap": "import_map.json",
+  "tasks": {
+    "test": "deno test --allow-all",
+    "serve": "supabase functions serve --no-verify-jwt"
   }
 }

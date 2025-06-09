@@ -140,7 +140,9 @@ async function processCampaign(campaign, results) {
     // Create a new product for the campaign
     product = await stripe.products.create({
       name: 'Donation',
-      metadata: {
+      active: true,
+      description: "Test product for campaign",
+      metadata: { 
         campaign_id: campaign.id,
       },
     });

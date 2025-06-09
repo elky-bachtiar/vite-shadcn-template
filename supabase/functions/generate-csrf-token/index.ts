@@ -1,6 +1,6 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
 import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
-import { generateCsrfToken } from '../_shared/csrf.ts';
+import { generateCsrfToken } from '../utils/csrf.js';
 
 /**
  * Edge function to generate CSRF tokens for authenticated users

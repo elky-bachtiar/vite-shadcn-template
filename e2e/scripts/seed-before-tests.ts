@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Load environment variables from .env.test
-const envPath = path.resolve(__dirname, '../.env.test');
+const envPath = path.resolve(__dirname, '../e2e/.env.test');
 dotenv.config({ path: envPath });
 
 interface SeedResponse {

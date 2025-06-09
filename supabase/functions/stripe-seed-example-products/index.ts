@@ -1,27 +1,48 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.21.0';
-import Stripe from 'https://esm.sh/stripe@12.18.0';
+import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
+import { createClient } from '@supabase/supabase-js';
+import Stripe from 'stripe';
+
+// Import utilities
+import { Logger } from '../utils/logger.js';
+import { DEFAULT_CORS_HEADERS, handleCorsPreflightRequest } from '../utils/cors.js';
+import { ApiResponse } from '../types/api.js';
+
+// Import shared product operations
+import { 
+  createProduct,
+  productExists,
+  getProductsByNameAndCampaignId,
+  addPriceToProduct
+} from '../stripe-products/stripe-product-operations.js';
 
 // Configure environment variables
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') || '';
-const SUPABASE_ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY') || '';
+const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
 const STRIPE_SECRET_KEY = Deno.env.get('STRIPE_SECRET_KEY') || '';
 
 // Initialize Supabase Client
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: {
+    persistSession: false,
+  }
+});
+
+// Initialize Logger
+const logger = new Logger('stripe-seed-example-products');
 
 // Initialize Stripe client
 const stripe = new Stripe(STRIPE_SECRET_KEY, {
-  apiVersion: '2023-10-16', // Use the latest API version
+  apiVersion: '2022-11-15', // Use the version compatible with our Stripe SDK
 });
 
 /**
  * Main function to seed Stripe products and prices for campaigns
  */
-export async function seedStripeProducts() {
-  console.log('Starting Stripe product seeding...');
+export async function seedStripeProducts(): Promise<ApiResponse> {
+  logger.info('Starting Stripe product seeding...');
 
   if (!STRIPE_SECRET_KEY) {
-    console.error('STRIPE_SECRET_KEY environment variable is not set');
+    logger.error('STRIPE_SECRET_KEY environment variable is not set');
     return { success: false, error: 'Missing Stripe API key' };
   }
 
@@ -33,16 +54,16 @@ export async function seedStripeProducts() {
       .eq('status', 'active');
 
     if (error) {
-      console.error('Error fetching campaigns:', error);
+      logger.error('Error fetching campaigns:', { error });
       return { success: false, error: 'Failed to fetch campaigns' };
     }
 
     if (!campaigns || campaigns.length === 0) {
-      console.log('No active campaigns found to seed');
+      logger.warn('No active campaigns found to seed');
       return { success: false, error: 'No campaigns found' };
     }
 
-    console.log(`Found ${campaigns.length} active campaigns for Stripe product creation`);
+    logger.info(`Found ${campaigns.length} active campaigns for Stripe product creation`);
     
     const results = {
       productsCreated: 0,
@@ -62,18 +83,18 @@ export async function seedStripeProducts() {
       }
     }
 
-    console.log('Finished Stripe product seeding!');
-    console.log(`Created ${results.productsCreated} products and ${results.pricesCreated} prices`);
-    console.log(`Skipped ${results.productsSkipped} existing products and ${results.pricesSkipped} existing prices`);
+    logger.info('Finished Stripe product seeding!');
+    logger.info(`Created ${results.productsCreated} products and ${results.pricesCreated} prices`);
+    logger.info(`Skipped ${results.productsSkipped} existing products and ${results.pricesSkipped} existing prices`);
     
     if (results.errors.length > 0) {
-      console.log(`Encountered ${results.errors.length} errors:`);
-      results.errors.forEach(err => console.error(`- ${err}`));
+      logger.warn(`Encountered ${results.errors.length} errors:`);
+      results.errors.forEach(err => logger.error(`- ${err}`));
     }
     
     return { success: true, results };
-  } catch (error) {
-    console.error('Error in seed function:', error);
+  } catch (error: any) {
+    logger.error('Error in seed function:', { error: error.message });
     return { success: false, error: error.message };
   }
 }
@@ -81,154 +102,149 @@ export async function seedStripeProducts() {
 /**
  * Process a single campaign by creating a product and prices in Stripe
  */
-async function processCampaign(campaign: any, results: any) {
-  console.log(`Processing campaign: ${campaign.id} - ${campaign.title}`);
-  
-  // Check if product already exists for this campaign by searching for the specific campaign_id in metadata
-  const existingProductsByCampaignId = await stripe.products.search({
-    query: `metadata['campaign_id']:'${campaign.id}'`,
-    limit: 100
-  });
-  
-  // Also check by name + active status as a fallback
-  const existingProductsByName = await stripe.products.list({
-    active: true,
-    limit: 100
-  });
+interface Campaign {
+  id: string;
+  title: string;
+  status: string;
+}
 
-  // Filter products that might have this campaign_id in metadata
-  const matchingProducts = existingProductsByName.data.filter(p => 
-    p.metadata && p.metadata.campaign_id === campaign.id
-  );
+interface SeedResults {
+  productsCreated: number;
+  productsSkipped: number;
+  pricesCreated: number;
+  pricesSkipped: number;
+  errors: string[];
+}
+
+async function processCampaign(campaign: Campaign, results: SeedResults) {
+  logger.info(`Processing campaign: ${campaign.id} - ${campaign.title}`);
   
-  let product;
+  // Check if donation product already exists for this campaign
+  const { data: existResult } = await productExists('Donation', campaign.id);
   
-  // If product exists with this campaign_id in metadata, use it; otherwise create a new one
-  if ((existingProductsByCampaignId.data && existingProductsByCampaignId.data.length > 0) || matchingProducts.length > 0) {
-    product = existingProductsByCampaignId.data?.[0] || matchingProducts[0];
-    console.log(`Using existing Stripe product for campaign ${campaign.id}: ${product.id}`);
-    results.productsSkipped++;
-    
-    // Check if the existing product metadata has the correct campaign_id
-    if (!product.metadata || product.metadata.campaign_id !== campaign.id) {
-      // Update the product to ensure it has the correct campaign_id
-      product = await stripe.products.update(product.id, {
-        metadata: {
-          ...product.metadata,
-          campaign_id: campaign.id
-        }
-      });
-      console.log(`Updated metadata for product ${product.id} with campaign_id: ${campaign.id}`);
+  let productData;
+  let stripeProductId;
+  
+  if (existResult && existResult.exists) {
+    // Get the existing product
+    const { data: products } = await getProductsByNameAndCampaignId('Donation', campaign.id);
+    if (products && products.length > 0) {
+      console.log(`Using existing product for campaign ${campaign.id}: ${products[0].stripe_product_id}`);
+      stripeProductId = products[0].stripe_product_id;
+      productData = products[0];
+      results.productsSkipped++;
     }
-  } else {
-    // Create a new product for the campaign
-    product = await stripe.products.create({
+  }
+  
+  if (!stripeProductId) {
+    // Create a new product for the campaign using the shared function
+    const { success, data, error } = await createProduct({
+      action: 'create',
       name: 'Donation',
+      campaignId: campaign.id,
+      active: true,
+      description: `Donation product for campaign: ${campaign.title}`,
       metadata: {
         campaign_id: campaign.id,
-      },
+        campaign_title: campaign.title
+      }
     });
-    console.log(`Created new Stripe product for campaign ${campaign.id}: ${product.id}`);
+    
+    if (!success || !data) {
+      logger.error(`Failed to create product for campaign ${campaign.id}:`, { error });
+      results.errors.push(`Campaign ${campaign.id}: ${error}`);
+      return;
+    }
+    
+    logger.info(`Created new product for campaign ${campaign.id}: ${data.stripe_product_id}`);
+    stripeProductId = data.stripe_product_id;
+    productData = data;
     results.productsCreated++;
   }
   
   // Create price tariffs from 5 to 500, incrementing by 5
-  await createPriceTariffs(campaign.id, product.id, results);
+  await createPriceTariffs(campaign.id, productData.id, results);
 }
 
 /**
- * Create price tariffs for a product
+ * Create price tariffs for a product using shared operations
  */
-async function createPriceTariffs(campaignId: string, productId: string, results: any) {
+async function createPriceTariffs(campaignId: string, productId: string, results: SeedResults) {
   // Generate prices from 5 to 500 with step 5
-  const pricePoints = [];
+  const pricePoints: number[] = [];
   for (let amount = 5; amount <= 500; amount += 5) {
     pricePoints.push(amount);
   }
   
-  console.log(`Creating ${pricePoints.length} price tariffs for product ${productId}`);
-  
-  // Get all existing prices for this product to check for duplicates
-  const allExistingPrices = await stripe.prices.list({
-    product: productId,
-    active: true,
-    limit: 100 // Adjust limit if you have more price points
-  });
-  
-  // Create a map of existing prices by amount for quick lookup
-  const existingPriceMap = new Map();
-  allExistingPrices.data.forEach(price => {
-    if (price.metadata && price.metadata.amount_usd) {
-      existingPriceMap.set(price.metadata.amount_usd, price);
-    }
-  });
+  logger.info(`Creating ${pricePoints.length} price tariffs for product ${productId}`);
   
   // For each price point, check if it exists or create it
   for (const pricePoint of pricePoints) {
     try {
+      // Format the price point for use as metadata
       const pricePointString = pricePoint.toString();
       
-      // Check if price already exists for this amount and product
-      if (existingPriceMap.has(pricePointString)) {
-        // Skip if price already exists
-        results.pricesSkipped++;
-        
-        // Ensure price has correct metadata
-        const existingPrice = existingPriceMap.get(pricePointString);
-        if (!existingPrice.metadata || 
-            existingPrice.metadata.campaign_id !== campaignId || 
-            existingPrice.metadata.product_id !== productId) {
-          
-          // Update price metadata if needed
-          await stripe.prices.update(existingPrice.id, {
-            metadata: {
-              ...existingPrice.metadata,
-              campaign_id: campaignId,
-              product_id: productId,
-              amount_usd: pricePointString
-            }
-          });
-          console.log(`Updated metadata for price ${existingPrice.id}, amount: ${pricePoint}`);
+      // Use the shared function to add a price to the product
+      const { success, data, error } = await addPriceToProduct(productId, {
+        unitAmount: pricePoint * 100, // Stripe uses cents
+        currency: 'usd',
+        metadata: {
+          campaign_id: campaignId,
+          product_id: productId,
+          amount_usd: pricePointString
         }
-      } else {
-        // Create new price
-        const price = await stripe.prices.create({
-          product: productId,
-          unit_amount: pricePoint * 100, // Stripe uses cents
-          currency: 'usd',
-          metadata: {
-            campaign_id: campaignId,
-            product_id: productId,
-            amount_usd: pricePointString
-          },
-        });
+      });
+      
+      if (success && data) {
         results.pricesCreated++;
+      } else {
+        logger.error(`Error creating price ${pricePoint} for product ${productId}:`, { error });
+        results.errors.push(`Price ${pricePoint} for product ${productId}: ${error}`);
       }
-    } catch (error) {
-      console.error(`Error creating/updating price ${pricePoint} for product ${productId}:`, error);
+    } catch (error: any) {
+      logger.error(`Error creating price ${pricePoint} for product ${productId}:`, { error: error.message });
       results.errors.push(`Price ${pricePoint} for product ${productId}: ${error.message}`);
     }
   }
   
-  console.log(`Finished creating prices for product ${productId}`);
+  logger.info(`Finished creating prices for product ${productId}`);
 }
 
 /**
- * Entry point for the script when run directly
+ * Deno edge function handler
  */
-if (import.meta.main) {
-  console.log('Running Stripe product seeder directly...');
+Deno.serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return handleCorsPreflightRequest(req);
+  }
   
   try {
-    const result = await seedStripeProducts();
-    if (result.success) {
-      console.log('✓ Stripe product seeding completed successfully');
+    logger.info('Running Stripe product seeder...');
+    
+    if (req.method === 'GET') {
+      const result = await seedStripeProducts();
+      return new Response(JSON.stringify(result), {
+        status: 200,
+        headers: { ...DEFAULT_CORS_HEADERS, 'Content-Type': 'application/json' }
+      });
     } else {
-      console.error('✗ Stripe product seeding failed:', result.error);
-      Deno.exit(1);
+      return new Response(JSON.stringify({
+        success: false,
+        error: 'Method not allowed. Use GET to seed products.'
+      }), {
+        status: 405,
+        headers: { ...DEFAULT_CORS_HEADERS, 'Content-Type': 'application/json' }
+      });
     }
-  } catch (error) {
-    console.error('Fatal error:', error);
-    Deno.exit(1);
+  } catch (e: any) {
+    logger.error('Error seeding products', { error: e.message });
+    return new Response(JSON.stringify({
+      success: false,
+      error: `Server error: ${e.message}`
+    }), {
+      status: 500,
+      headers: { ...DEFAULT_CORS_HEADERS, 'Content-Type': 'application/json' }
+    });
   }
-}
+});

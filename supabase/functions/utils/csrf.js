@@ -7,7 +7,7 @@
 
 // In-memory token store (for Edge Functions)
 // In a production environment with multiple instances, consider using a distributed cache
-const csrfTokens = new Map<string, { token: string, expires: number }>();
+const csrfTokens = new Map();
 
 /**
  * Generates a CSRF token for a user
@@ -15,7 +15,7 @@ const csrfTokens = new Map<string, { token: string, expires: number }>();
  * @param userId User ID to associate with the token
  * @returns Generated CSRF token
  */
-export function generateCsrfToken(userId: string): string {
+export function generateCsrfToken(userId) {
   // Use crypto for secure random token generation
   const token = crypto.randomUUID();
   
@@ -35,7 +35,7 @@ export function generateCsrfToken(userId: string): string {
  * @param token Token to validate
  * @returns Boolean indicating if token is valid
  */
-export function validateCsrfToken(userId: string, token: string): boolean {
+export function validateCsrfToken(userId, token) {
   const storedToken = csrfTokens.get(userId);
   
   if (!storedToken) {
@@ -55,7 +55,7 @@ export function validateCsrfToken(userId: string, token: string): boolean {
 /**
  * Constant-time comparison function to prevent timing attacks
  */
-function timingSafeEqual(a: string, b: string): boolean {
+function timingSafeEqual(a, b) {
   if (a.length !== b.length) {
     return false;
   }
@@ -76,7 +76,7 @@ function timingSafeEqual(a: string, b: string): boolean {
  * @param supabase Initialized Supabase client
  * @returns Result of CSRF validation
  */
-export async function csrfProtection(req: Request, supabase: any) {
+export async function csrfProtection(req, supabase) {
   // Only protect mutating operations
   if (!['POST', 'PUT', 'DELETE', 'PATCH'].includes(req.method)) {
     return { valid: true };

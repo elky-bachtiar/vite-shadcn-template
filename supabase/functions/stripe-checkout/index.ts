@@ -1,85 +1,104 @@
 import 'jsr:@supabase/functions-js/edge-runtime.d.ts';
-import Stripe from 'npm:stripe@17.7.0';
-import { createClient } from 'npm:@supabase/supabase-js@2.49.1';
+// This ensures the Deno types are available
+declare const Deno: {
+  env: {
+    get(key: string): string | undefined;
+  };
+  serve(handler: (req: Request) => Promise<Response> | Response): void;
+};
+import Stripe from 'stripe';
+import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '');
+// Import utilities
+import { Logger, LogLevel } from '../utils/logger.js';
+import { RateLimiter } from '../utils/rate-limiter.js';
+import { DEFAULT_CORS_HEADERS, handleCorsPreflightRequest, addCorsHeaders } from '../utils/cors.js';
+
+// Initialize Supabase Client
+const supabase = createClient(Deno.env.get('SUPABASE_URL') ?? '', Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '', {
+  auth: {
+    persistSession: false,
+  }
+});
+
+// Initialize Logger
+const logger = new Logger('stripe-checkout');
+
+// Initialize Stripe client
 const stripeSecret = Deno.env.get('STRIPE_SECRET_KEY')!;
 const stripe = new Stripe(stripeSecret, {
+  apiVersion: '2022-11-15', // Use the version compatible with our Stripe SDK
   appInfo: {
-    name: 'Bolt Integration',
+    name: 'Shop2Give',
     version: '1.0.0',
   },
 });
 
-// Add rate limiting
-const RATE_LIMIT = 100; // requests per minute
-const rateLimitStore = new Map<string, number[]>();
+// Initialize rate limiter
+const rateLimiter = new RateLimiter(supabase, 'checkout_rate_limits', logger);
 
-function isRateLimited(userId: string): boolean {
-  const now = Date.now();
-  const minute = 60 * 1000;
-  const userRequests = rateLimitStore.get(userId) || [];
-  
-  // Clean up old requests
-  const recentRequests = userRequests.filter(timestamp => now - timestamp < minute);
-  rateLimitStore.set(userId, recentRequests);
-  
-  if (recentRequests.length >= RATE_LIMIT) {
-    return true;
-  }
-  
-  recentRequests.push(now);
-  return false;
-}
-
-// Add logging
-async function logCheckoutAttempt(userId: string, success: boolean, error?: string) {
+/**
+ * Log checkout attempt for analytics and debugging
+ * @param userId User ID attempting checkout
+ * @param success Whether checkout was successful
+ * @param errorMessage Optional error message if checkout failed
+ */
+async function logCheckoutAttempt(userId: string, success: boolean, errorMessage?: string) {
   try {
     await supabase.from('checkout_logs').insert({
       user_id: userId,
       success,
-      error_message: error,
+      error_message: errorMessage || null,
       timestamp: new Date().toISOString(),
     });
-  } catch (logError) {
-    console.error('Failed to log checkout attempt:', logError);
+    
+    if (!success) {
+      logger.warn(`Failed checkout attempt for user ${userId}`, { error: errorMessage });
+    } else {
+      logger.info(`Successful checkout for user ${userId}`);
+    }
+  } catch (logError: any) {
+    // Don't let logging errors affect the main flow
+    logger.error('Failed to log checkout attempt', { error: logError.message });
   }
 }
 
-function corsResponse(body: string | object | null, status = 200) {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-    'Access-Control-Max-Age': '86400',
-  };
-
+// Function to create a response with CORS headers
+function corsResponse(body: string | object | null, status = 200): Response {
   if (status === 204) {
-    return new Response(null, { status, headers });
+    return new Response(null, { status, headers: DEFAULT_CORS_HEADERS });
   }
 
   return new Response(JSON.stringify(body), {
     status,
-    headers: {
-      ...headers,
-      'Content-Type': 'application/json',
-    },
+    headers: { ...DEFAULT_CORS_HEADERS, 'Content-Type': 'application/json' },
   });
 }
 
-Deno.serve(async (req) => {
+// Configure rate limiter with default settings
+rateLimiter.setConfig({
+  name: 'stripe-checkout',
+  identifier: 'default', // Will be overridden in the handler
+  maxRequests: 100,
+  windowSeconds: 60,
+});
+
+// Explicitly type the handler to always return Promise<Response>
+Deno.serve(async (req): Promise<Response> => {
   try {
     if (req.method === 'OPTIONS') {
-      return corsResponse({}, 204);
+      return handleCorsPreflightRequest(req);
     }
 
     if (req.method !== 'POST') {
+      logger.warn('Method not allowed: ' + req.method);
       return corsResponse({ error: 'Method not allowed' }, 405);
     }
 
     // Verify authentication
     const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
+      logger.warn('Missing authorization header');
       return corsResponse({ error: 'Unauthorized' }, 401);
     }
 
@@ -87,18 +106,27 @@ Deno.serve(async (req) => {
     const { data: { user }, error: getUserError } = await supabase.auth.getUser(token);
 
     if (getUserError || !user) {
+      logger.warn('Invalid authentication token');
       return corsResponse({ error: 'Invalid authentication token' }, 401);
     }
-
-    // Check rate limit
-    if (isRateLimited(user.id)) {
-      await logCheckoutAttempt(user.id, false, 'Rate limit exceeded');
+    
+    // Check rate limit with user ID
+    rateLimiter.setConfig({
+      name: 'stripe-checkout',
+      identifier: user.id,
+      maxRequests: 100,
+      windowSeconds: 60,
+    });
+    
+    const isLimited = await rateLimiter.isRateLimited();
+    if (isLimited) {
+      logger.warn(`Rate limit exceeded for user ${user.id}`);
       return corsResponse({ error: 'Too many requests' }, 429);
     }
 
     const { price_id, success_url, cancel_url, mode } = await req.json();
 
-    const error = validateParameters(
+    const validationError = validateParameters(
       { price_id, success_url, cancel_url, mode },
       {
         cancel_url: 'string',
@@ -108,9 +136,9 @@ Deno.serve(async (req) => {
       },
     );
 
-    if (error) {
-      await logCheckoutAttempt(user.id, false, error);
-      return corsResponse({ error }, 400);
+    if (validationError !== "") {
+      await logCheckoutAttempt(user.id, false, validationError);
+      return corsResponse({ error: validationError }, 400);
     }
 
     // Get or create Stripe customer
@@ -219,7 +247,7 @@ Deno.serve(async (req) => {
     await logCheckoutAttempt(user.id, true);
     return corsResponse({ sessionId: session.id, url: session.url });
   } catch (error: any) {
-    console.error(`Checkout error: ${error.message}`);
+    logger.error(`Checkout error: ${error.message}`);
     return corsResponse({ error: error.message }, 500);
   }
 });
@@ -227,24 +255,29 @@ Deno.serve(async (req) => {
 type ExpectedType = 'string' | { values: string[] };
 type Expectations<T> = { [K in keyof T]: ExpectedType };
 
-function validateParameters<T extends Record<string, any>>(values: T, expected: Expectations<T>): string | undefined {
+function validateParameters<T extends Record<string, any>>(values: T, expected: Expectations<T>): string {
+  // Default to empty string if no validation errors
+  let validationError = ""; 
   for (const parameter in values) {
     const expectation = expected[parameter];
     const value = values[parameter];
 
     if (expectation === 'string') {
       if (value == null) {
-        return `Missing required parameter ${parameter}`;
+        validationError = `Missing required parameter ${parameter}`;
+        break;
       }
       if (typeof value !== 'string') {
-        return `Expected parameter ${parameter} to be a string got ${JSON.stringify(value)}`;
+        validationError = `Expected parameter ${parameter} to be a string got ${JSON.stringify(value)}`;
+        break;
       }
     } else {
       if (!expectation.values.includes(value)) {
-        return `Expected parameter ${parameter} to be one of ${expectation.values.join(', ')}`;
+        validationError = `Expected parameter ${parameter} to be one of ${expectation.values.join(', ')}`;
+        break;
       }
     }
   }
 
-  return undefined;
+  return validationError;
 }

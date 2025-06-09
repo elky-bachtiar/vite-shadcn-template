@@ -20,6 +20,9 @@ console.log('Playwright config loaded with BASE_URL:', BASE_URL);
  * See https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
+  /* Global setup and teardown */
+  globalSetup: './global-setup.ts',
+  //globalTeardown: './global-setup.ts',
   testDir: './tests',
   /* Maximum time one test can run for */
   timeout: 30 * 1000,
@@ -42,6 +45,9 @@ export default defineConfig({
     
     /* Take screenshot on test failure */
     screenshot: 'only-on-failure',
+    
+    /* Enable JavaScript to run in browser */
+    actionTimeout: 10000,
   },
   
   /* Configure projects for major browsers */
@@ -51,6 +57,9 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
+  
+  /* Ensure test isolation */
+  workers: 1,
   
   /* Run local dev server before starting the tests */
   webServer: {

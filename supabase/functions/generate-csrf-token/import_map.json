@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "stripe": "npm:stripe@13.11.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.39.7",
+    "fs": "node:fs",
+    "path": "node:path",
+    "url": "node:url",
+    "crypto": "node:crypto",
+    "./utils/": "./utils/"
+  }
+}
