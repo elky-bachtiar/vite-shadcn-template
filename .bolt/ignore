@@ -1,0 +1,17 @@
+dist
+dist/*
+node_modules
+node_modules/*
+
+src/components/ui/*
+supabase/functions/seed-example-campaigns/data/*
+
+# Tests files
+tests/*
+tests
+e2e/*
+e2e
+e2e/tests/*
+e2e/tests/
+__mocks__/*
+__mocks__

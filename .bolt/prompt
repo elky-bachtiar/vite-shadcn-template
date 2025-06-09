@@ -1,0 +1,64 @@
+For all designs I ask you to make, have them be beautiful, not cookie cutter. Make webpages that are fully featured and worthy for production.
+
+By default, this template supports JSX syntax with Tailwind CSS classes, React hooks, and Lucide React for icons. Do not install other packages for UI themes, icons, etc unless absolutely necessary or I request them.
+
+Use icons from lucide-react for logos.
+
+
+## ⚡️ Execution Policy for Bolt.new
+IMPORTANT: Bolt.new must operate continuously, checking off tasks in the Implementation Checklist without pausing or waiting for instructions. Each completed module or file should immediately trigger the next logical task.
+
+✔ Behavior Rules
+1. No Halting — Do not stop after completing a single task. Progress to the next checklist item immediately.
+
+2. Checklist Bound — Reference and validate against 02_IMPLEMENTATION_CHECKLIST.md at each step. Only mark a task complete if it meets all specified acceptance criteria.
+
+3. Checklist Completeness — The checklist must include:
+- All routes/pages and edge functions
+- Database schema (all referenced tables and relationships)
+- Donation percentage enforcement logic
+- Stripe metadata validation
+- Crypto donation logic
+- RevenueCat & Pica webhook testing
+- AI onboarding + OpenAI key support for store managers
+- Final success condition: the entire system matches 01_INITIAL.md blueprint
+
+4. Command Escalation — When Bolt.new finishes 01_INITIAL.md, it must continue with 03_IMPLEMENTATION_COMMAND.md immediately.
+
+5. Self-checks — Every function or module implemented must include:
+- Validation logic (e.g., metadata checks, % limits)
+- Integration test stubs
+- Logging and error recovery (if applicable)
+
+# 🧠 Strategy for Bolt.new
+1. Start with 01_INITIAL.md
+- Extract and map all components, functions, endpoints, user flows, and integrations.
+- For each, find its corresponding implementation task in 02_IMPLEMENTATION_CHECKLIST.md.
+- Mark missing items (e.g., donation validation, crypto donation edge case) and add them.
+
+2. Validate 02_IMPLEMENTATION_CHECKLIST.md
+- Confirm every feature and flow mentioned in 01_INITIAL.md is reflected.
+- Add missing checklist items (if any) such as:
+    - Stripe metadata validation hook
+    - Duplicate {product_id + campaign_id} cart logic
+    - Donation certificate PDF generation
+    - AI Wizard for onboarding
+    - Crypto donation verification endpoint
+
+3. Proceed with Development
+- Start from the top of the checklist (Foundation → Auth → Campaigns → Checkout).
+- After each section:
+    - ✅ Validate acceptance criteria
+    - 📥 Log result
+    - Command result in MD file
+    - 🚀 Continue to next section without delay
+
+4. Final Phase: 03_IMPLEMENTATION_COMMAND.md
+- Begin only after all items from the initial blueprint have been verified and implemented.
+- Use this file as the execution logic source (structure, architecture, setup files, commands).
+- Confirm Bolt.new has set up all components including Docker, Supabase, Stripe, RevenueCat, and Pica.
+
+🔁 Reiteration Mechanism
+If Bolt.new is restarted or reloaded:
+- Resume from last incomplete checklist section.
+- Re-validate already completed sections before progressing.

@@ -1,0 +1,98 @@
+{
+  "campaigns": [
+    {
+      "id": "mem1",
+      "slug": "david-chen-scholarship-fund",
+      "title": "David Chen Memorial Scholarship Fund",
+      "description": "Honor the memory of David Chen, a brilliant young engineer who passed away in a tragic accident. This scholarship will support aspiring engineering students from underrepresented backgrounds at his alma mater, ensuring his passion for inclusive innovation lives on.",
+      "featured_image_url": "https://images.pexels.com/photos/267885/pexels-photo-267885.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 100000,
+      "current_amount": 67500,
+      "amount_raised": 67500,
+      "location": "Stanford, CA",
+      "category": "memorial",
+      "donor_count": 348,
+      "start_date": "2023-02-15",
+      "end_date": "2023-12-31",
+      "is_urgent": false,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 7840,
+      "share_count": 1230,
+      "tags": ["scholarship", "engineering", "memorial", "education"],
+      "metadata": {
+        "scholarship_details": {
+          "university": "Stanford University",
+          "department": "Engineering",
+          "annual_awards": 2,
+          "amount_per_scholarship": 25000
+        },
+        "about_david": "David was a pioneering engineer who believed in making technology accessible to everyone.",
+        "family_contact": "chen.family@example.com",
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "mem2",
+      "slug": "maria-rodriguez-community-garden",
+      "title": "Maria Rodriguez Memorial Community Garden",
+      "description": "Create a vibrant community garden in memory of Maria Rodriguez, a beloved community activist who dedicated her life to food justice and environmental education in her neighborhood. The garden will provide fresh produce and educational programs for local residents.",
+      "featured_image_url": "https://images.pexels.com/photos/1105019/pexels-photo-1105019.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 45000,
+      "current_amount": 31200,
+      "amount_raised": 31200,
+      "location": "Bronx, NY",
+      "category": "memorial",
+      "donor_count": 187,
+      "start_date": "2023-03-01",
+      "end_date": "2023-09-01",
+      "is_urgent": false,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 5230,
+      "share_count": 780,
+      "tags": ["community garden", "memorial", "urban agriculture", "food justice"],
+      "metadata": {
+        "garden_size": "0.5 acres",
+        "location_details": "Corner of Main St and Park Ave, Bronx",
+        "planned_features": ["vegetable plots", "fruit trees", "community gathering space", "educational area"],
+        "community_partner": "Bronx Green Alliance",
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "mem3",
+      "slug": "firefighter-thomas-brown-memorial-fund",
+      "title": "Firefighter Thomas Brown Memorial Fund",
+      "description": "Honor the legacy of Firefighter Thomas Brown, who lost his life saving a family from a burning building. This fund will support his family and establish an annual fire safety program in local schools to educate children about fire prevention.",
+      "featured_image_url": "https://images.pexels.com/photos/9009298/pexels-photo-9009298.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 80000,
+      "current_amount": 68750,
+      "amount_raised": 68750,
+      "location": "Seattle, WA",
+      "category": "memorial",
+      "donor_count": 412,
+      "start_date": "2023-01-10",
+      "end_date": "2023-07-10",
+      "is_urgent": true,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 9120,
+      "share_count": 1870,
+      "tags": ["firefighter", "memorial", "fire safety", "education"],
+      "metadata": {
+        "years_of_service": 15,
+        "fire_department": "Seattle Fire Department, Station 12",
+        "family_members": "Wife and two children, ages 8 and 10",
+        "awards": ["Medal of Valor", "Distinguished Service Award"],
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    }
+  ]
+}

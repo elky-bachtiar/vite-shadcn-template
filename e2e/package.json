@@ -1,0 +1,27 @@
+{
+    "name": "shop2give-e2e",
+    "version": "1.0.0",
+    "description": "End-to-end tests for Shop2Give",
+    "type": "module",
+    "main": "index.js",
+    "scripts": {
+      "test": "playwright test",
+      "test:ui": "playwright test --ui",
+      "test:debug": "playwright test --debug",
+      "test:supabase": "playwright test tests/supabase/",
+      "report": "playwright show-report"
+    },
+    "keywords": [
+      "e2e",
+      "testing",
+      "playwright"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+      "@playwright/test": "^1.52.0",
+      "@supabase/supabase-js": "^2.21.0",
+      "dotenv": "^16.3.1",
+      "stripe": "^12.18.0"
+    }
+  }

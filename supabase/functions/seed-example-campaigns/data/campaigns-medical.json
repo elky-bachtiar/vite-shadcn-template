@@ -1,0 +1,91 @@
+{
+  "campaigns": [
+    {
+      "id": "m1",
+      "slug": "pediatric-oncology-equipment",
+      "title": "Pediatric Oncology Equipment for City Hospital",
+      "description": "Help us acquire state-of-the-art pediatric oncology equipment for City Hospital's children's cancer ward. This equipment will enable more accurate diagnoses and less invasive treatments for young cancer patients.",
+      "featured_image_url": "https://images.pexels.com/photos/3844581/pexels-photo-3844581.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 85000,
+      "current_amount": 42500,
+      "amount_raised": 42500,
+      "location": "Boston, MA",
+      "category": "medical",
+      "donor_count": 215,
+      "start_date": "2023-01-15",
+      "end_date": "2023-12-15",
+      "is_urgent": true,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 5800,
+      "share_count": 720,
+      "tags": ["healthcare", "children", "cancer", "medical equipment"],
+      "metadata": {
+        "equipment_needed": ["MRI scanner", "specialized imaging equipment", "treatment planning software"],
+        "children_served_annually": 450,
+        "hospital_department": "Pediatric Oncology",
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "m2",
+      "slug": "mobile-dental-clinic-for-underserved-communities",
+      "title": "Mobile Dental Clinic for Underserved Communities",
+      "description": "Our mobile dental clinic program brings critical dental care to underserved rural and urban communities where dental services are limited or non-existent. Your support helps us purchase and equip a new mobile clinic and provide services to thousands of people.",
+      "featured_image_url": "https://images.pexels.com/photos/3845806/pexels-photo-3845806.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 120000,
+      "current_amount": 67500,
+      "amount_raised": 67500,
+      "location": "Dallas, TX",
+      "category": "medical",
+      "donor_count": 342,
+      "start_date": "2023-02-01",
+      "end_date": "2023-10-01",
+      "is_urgent": false,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 4200,
+      "share_count": 530,
+      "tags": ["dental care", "healthcare", "mobile clinic", "underserved communities"],
+      "metadata": {
+        "communities_served": 12,
+        "annual_patient_capacity": 5000,
+        "services": ["cleanings", "fillings", "extractions", "oral health education"],
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "m3",
+      "slug": "mental-health-resources-for-veterans",
+      "title": "Mental Health Resources for Veterans",
+      "description": "This campaign aims to expand mental health services specifically tailored for veterans struggling with PTSD, depression, and adjustment disorders. Funds will help establish a dedicated veterans mental health center with specialized therapists and support groups.",
+      "featured_image_url": "https://images.pexels.com/photos/6995374/pexels-photo-6995374.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 175000,
+      "current_amount": 86000,
+      "amount_raised": 86000,
+      "location": "San Diego, CA",
+      "category": "medical",
+      "donor_count": 450,
+      "start_date": "2023-03-15",
+      "end_date": "2023-12-31",
+      "is_urgent": true,
+      "is_featured": false,
+      "verification_status": "verified",
+      "view_count": 7400,
+      "share_count": 1250,
+      "tags": ["veterans", "mental health", "PTSD", "therapy", "healthcare"],
+      "metadata": {
+        "estimated_veterans_served": 500,
+        "services_provided": ["individual therapy", "group therapy", "family counseling", "psychiatric services"],
+        "partnered_organizations": ["Veterans Affairs", "Mental Health Alliance"],
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    }
+  ]
+}

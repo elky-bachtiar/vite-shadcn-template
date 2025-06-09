@@ -1,0 +1,93 @@
+{
+  "campaigns": [
+    {
+      "id": "e1",
+      "slug": "hurricane-relief-for-coastal-communities",
+      "title": "Hurricane Relief for Gulf Coast Communities",
+      "description": "Help us provide immediate relief to families affected by Hurricane Marcus along the Gulf Coast. Funds will supply temporary shelter, food, clean water, and medical aid to thousands of displaced residents in the hardest-hit areas.",
+      "featured_image_url": "https://images.pexels.com/photos/1446076/pexels-photo-1446076.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 250000,
+      "current_amount": 187500,
+      "amount_raised": 187500,
+      "location": "Mobile, AL",
+      "category": "emergency",
+      "donor_count": 2840,
+      "start_date": "2023-09-15",
+      "end_date": "2023-12-15",
+      "is_urgent": true,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 24600,
+      "share_count": 8750,
+      "tags": ["hurricane", "disaster relief", "emergency aid", "shelter"],
+      "metadata": {
+        "affected_areas": ["Mobile County", "Baldwin County", "Escambia County"],
+        "immediate_needs": ["temporary housing", "clean water", "food supplies", "medical aid"],
+        "partner_organizations": ["Red Cross", "Local Emergency Management Agency"],
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "e2",
+      "slug": "wildfire-evacuation-fund",
+      "title": "California Wildfire Evacuation Fund",
+      "description": "Support evacuation efforts and emergency services for communities threatened by the rapidly spreading Sierra Wildfire complex. Your donation helps transport vulnerable residents to safety and provides emergency supplies to evacuation centers.",
+      "featured_image_url": "https://images.pexels.com/photos/1784578/pexels-photo-1784578.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 175000,
+      "current_amount": 142000,
+      "amount_raised": 142000,
+      "location": "Sacramento, CA",
+      "category": "emergency",
+      "donor_count": 1650,
+      "start_date": "2023-07-28",
+      "end_date": "2023-10-28",
+      "is_urgent": true,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 18700,
+      "share_count": 5240,
+      "tags": ["wildfire", "evacuation", "emergency", "disaster relief"],
+      "metadata": {
+        "acres_burned": 120000,
+        "communities_threatened": ["Pine Ridge", "Oak Valley", "Cedar Hills"],
+        "evacuation_centers": 8,
+        "people_displaced": 12500,
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    },
+    {
+      "id": "e3",
+      "slug": "earthquake-recovery-nepal",
+      "title": "Nepal Earthquake Recovery Initiative",
+      "description": "Join our efforts to rebuild critical infrastructure and provide emergency supplies after the devastating 7.8 magnitude earthquake that struck central Nepal. We're focusing on rebuilding schools, medical facilities, and water systems in remote villages.",
+      "featured_image_url": "https://images.pexels.com/photos/2079234/pexels-photo-2079234.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2",
+      "currency": "USD",
+      "goal_amount": 350000,
+      "current_amount": 215000,
+      "amount_raised": 215000,
+      "location": "Kathmandu, Nepal",
+      "category": "emergency",
+      "donor_count": 3750,
+      "start_date": "2023-04-10",
+      "end_date": "2024-04-10",
+      "is_urgent": true,
+      "is_featured": true,
+      "verification_status": "verified",
+      "view_count": 31500,
+      "share_count": 9200,
+      "tags": ["earthquake", "disaster recovery", "infrastructure", "humanitarian aid"],
+      "metadata": {
+        "affected_regions": ["Gorkha", "Sindhupalchok", "Nuwakot", "Dhading"],
+        "casualties": 8500,
+        "homes_destroyed": 288000,
+        "reconstruction_focus": ["schools", "health posts", "water systems", "community centers"],
+        "seedTag": "EXAMPLE_DATA"
+      },
+      "status": "active"
+    }
+  ]
+}
