@@ -14,7 +14,7 @@
     "supabase:reset": "supabase reset",
     "test:e2e": "cd e2e && npm install --force && npx playwright test",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs",
-    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs --watch",
+    "test:wfatch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs --watch",
     "test:supabase": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.config.cjs tests/supabase"
   },
   "dependencies": {
