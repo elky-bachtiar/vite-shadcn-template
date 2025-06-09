@@ -56,7 +56,7 @@ export function ProductCard({
           <CardTitle className="text-lg line-clamp-2">{name}</CardTitle>
           <div className="flex items-center gap-1">
             {isDigital && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary\" className="text-xs">
                 Digital
               </Badge>
             )}
