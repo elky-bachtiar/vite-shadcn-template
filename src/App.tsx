@@ -7,6 +7,10 @@ import { ThemeToggle } from "@/components/ui/theme-toggle.js";
 import { LoginPage } from "@/components/auth/login.js";
 import { RegisterPage } from "@/components/auth/register.js";
 import { AuthProvider, RequireAuth, useAuth } from "./context/auth-context.js";
+import { ProductsPage } from "./pages/products.js";
+import { CampaignDetailPage } from "./pages/campaign-detail.js";
+import { CheckoutSuccessPage } from "./pages/checkout-success.js";
+import { Toaster } from "@/components/ui/sonner.js";
 
 function HomePage() {
   const { user, signOut } = useAuth();
@@ -19,6 +23,12 @@ function HomePage() {
       <div className="flex gap-4">
         <Button asChild>
           <Link to="/dashboard">Go to Dashboard</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/products">Browse Products</Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/campaign/1">View Campaign</Link>
         </Button>
         {user ? (
           <>
@@ -51,6 +61,9 @@ function App() {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/products" element={<ProductsPage />} />
+            <Route path="/campaign/:id" element={<CampaignDetailPage />} />
+            <Route path="/success" element={<CheckoutSuccessPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route 
@@ -62,6 +75,7 @@ function App() {
               } 
             />
           </Routes>
+          <Toaster />
         </AuthProvider>
       </Router>
     </ThemeProvider>
